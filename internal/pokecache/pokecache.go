@@ -1,6 +1,7 @@
 package pokecache
 
 import (
+	"fmt"
 	"sync"
 	"time"
 )
@@ -46,20 +47,26 @@ type cacheEntry struct {
 	val       []byte
 }
 
-func NewCache(interval time.Duration) {
+func NewCache(interval time.Duration) *SafeMap {
 	Cache = NewSafeMap()
-	ReapLoop(Cache, interval)
+	go Cache.ReapLoop(interval)
+	return Cache
 }
 
-func ReapLoop(Cache *SafeMap, intervalMinute time.Duration) {
-	ticker := time.NewTicker(intervalMinute * time.Minute)
+func (Cache *SafeMap) ReapLoop(intervalDur time.Duration) {
+	fmt.Println("Inside ReapLoop logic")
+	ticker := time.NewTicker(intervalDur)
+	fmt.Printf("Initialized ticker with value: %v\n", ticker.C)
 	defer ticker.Stop()
 
-	currentTime := time.Now()
-	clearCacheTime := currentTime.Add(-intervalMinute * time.Minute)
 	for range ticker.C {
+		currentTime := time.Now()
+		clearCacheTime := currentTime.Add(-intervalDur)
+		fmt.Printf("Looping over ticker %v\n", ticker.C)
 		for key, value := range Cache.data {
+			fmt.Printf("Checking if value.createdAt: %v is before clearCacheTime: %v\n", value.createdAt, clearCacheTime)
 			if value.createdAt.Before(clearCacheTime) {
+				fmt.Printf("Clearing cache for url: %s\n", key)
 				Cache.Delete(key)
 			}
 		}
