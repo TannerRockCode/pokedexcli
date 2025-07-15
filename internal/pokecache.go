@@ -1,11 +1,14 @@
 package pokecache
 
 import (
+	"sync"
 	"time"
 )
 
+var Cache *SafeMap
+
 type SafeMap struct {
-	mu sync.Mutex
+	mu   sync.Mutex
 	data map[string]cacheEntry
 }
 
@@ -18,17 +21,18 @@ func NewSafeMap() *SafeMap {
 func (sm *SafeMap) Add(key string, val []byte) {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
-	sm.data[key] = {createdAt: time.Now(), val: val}
+	sm.data[key] = cacheEntry{createdAt: time.Now(), val: val}
 }
 
 func (sm *SafeMap) Get(key string) ([]byte, bool) {
+	var byteArr []byte
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
 	value, exists := sm.data[key]
 	if exists {
-		return value, true
+		return value.val, true
 	}
-	return []byte, false
+	return byteArr, false
 }
 
 func (sm *SafeMap) Delete(key string) {
@@ -37,28 +41,24 @@ func (sm *SafeMap) Delete(key string) {
 	delete(sm.data, key)
 }
 
-type Cache struct {
-	map[string]cacheEntry
-}
-
 type cacheEntry struct {
 	createdAt time.Time
-	val []byte
+	val       []byte
 }
 
 func NewCache(interval time.Duration) {
 	Cache = NewSafeMap()
-	Cache.ReapLoop()
+	ReapLoop(Cache, interval)
 }
 
-func ReapLoop(intervalMinute int) {
+func ReapLoop(Cache *SafeMap, intervalMinute time.Duration) {
 	ticker := time.NewTicker(intervalMinute * time.Minute)
 	defer ticker.Stop()
 
 	currentTime := time.Now()
 	clearCacheTime := currentTime.Add(-intervalMinute * time.Minute)
 	for range ticker.C {
-		for key, value := range Cache{
+		for key, value := range Cache.data {
 			if value.createdAt.Before(clearCacheTime) {
 				Cache.Delete(key)
 			}

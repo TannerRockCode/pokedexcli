@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/TannerRockCode/pokedexcli/internal/pokecache"
 )
 
 type LocationAreaResponse struct {
@@ -19,18 +18,18 @@ type LocationAreaResult struct {
 }
 
 func GetLocationAreas(limit Limit, mapEnum int) (LocationAreaResponse, error) {
-	var Cache *SafeMap
+	//var Cache *SafeMap
 	var locationAreas LocationAreaResponse
 	url := fmt.Sprintf("https://pokeapi.co/api/v2/location-area/?limit=%d&offset=%d", limit, mapEnum)
 
-	dat, exists := Cache.Get(url)
-	if exists {
-		err := json.Unmarshal(dat, &locationAreas)
-		if err != nil {
-			return locationAreas, err
-		}
-		return locationAreas, nil
-	}
+	// dat, exists := Cache.Get(url)
+	// if exists {
+	// 	err := json.Unmarshal(dat, &locationAreas)
+	// 	if err != nil {
+	// 		return locationAreas, err
+	// 	}
+	// 	return locationAreas, nil
+	// }
 
 	dat, err := Get(url)
 	if err != nil {
