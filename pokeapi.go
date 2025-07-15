@@ -3,6 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
+	"github.com/TannerRockCode/pokedexcli/internal/pokecache"
 )
 
 type LocationAreaResponse struct {
@@ -18,7 +21,7 @@ type LocationAreaResult struct {
 }
 
 func GetLocationAreas(limit Limit, mapEnum int) (LocationAreaResponse, error) {
-	//var Cache *SafeMap
+	pokecache.NewCache(time.Duration(5))
 	var locationAreas LocationAreaResponse
 	url := fmt.Sprintf("https://pokeapi.co/api/v2/location-area/?limit=%d&offset=%d", limit, mapEnum)
 
