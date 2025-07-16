@@ -53,6 +53,7 @@ func init() {
 }
 
 func repl() {
+	var args string
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Print("Pokedex > ")
@@ -61,8 +62,14 @@ func repl() {
 		if len(words) == 0 {
 			continue
 		}
+
 		commandName := words[0]
-		args := words[1]
+		fmt.Println("Getting words at index 1")
+		if len(words) > 1 {
+			args = words[1]
+		}
+
+		fmt.Println("Got words at index 1")
 
 		command, ok := Commands[commandName]
 		if !ok {
