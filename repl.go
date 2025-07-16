@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -11,14 +12,16 @@ type Limit int
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(interface{}) error
 }
 
 var Commands map[string]cliCommand
 var MapEnum int
+var ExploreEnum int
 
 func init() {
 	MapEnum = -1
+	ExploreEnum = -1
 
 	Commands = map[string]cliCommand{
 		"exit": {
@@ -41,6 +44,11 @@ func init() {
 			description: "Displays names of previous 20 location areas in the Pokemon world",
 			callback:    commandMapB,
 		},
+		"explore": {
+			name:        "explore",
+			description: "Displays names of Pokemon found in provided location area",
+			callback:    commandExplore,
+		},
 	}
 }
 
@@ -54,14 +62,15 @@ func repl() {
 			continue
 		}
 		commandName := words[0]
-		//args := words[1:]
+		args := words[1]
 
 		command, ok := Commands[commandName]
 		if !ok {
 			fmt.Println("Invalid command")
 			continue
 		}
-		command.callback()
+
+		command.callback(args)
 		//fmt.Printf("Your command was: %s\n", words[0])
 	}
 }
@@ -72,13 +81,13 @@ func cleanInput(text string) []string {
 	return words
 }
 
-func commandExit() error {
+func commandExit(arg interface{}) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp() error {
+func commandHelp(arg interface{}) error {
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Println("Usage:")
 	fmt.Println("")
@@ -89,7 +98,7 @@ func commandHelp() error {
 	return nil
 }
 
-func commandMap() error {
+func commandMap(arg interface{}) error {
 	MapEnum++
 	las, err := GetLocationAreas(Limit(20), MapEnum)
 
@@ -104,7 +113,7 @@ func commandMap() error {
 	return nil
 }
 
-func commandMapB() error {
+func commandMapB(arg interface{}) error {
 	if MapEnum > 0 {
 		MapEnum--
 	}
@@ -117,5 +126,22 @@ func commandMapB() error {
 	for _, la := range las.Results {
 		fmt.Printf("%s\n", la.Name)
 	}
+	return nil
+}
+
+func commandExplore(arg interface{}) error {
+	fmt.Printf("Entering commandExplore logic with arg: %v\n", arg)
+	locationArea, ok := arg.(string)
+	if !ok {
+		fmt.Printf("commandExplore argument not string\n")
+		return errors.New("explore command requires string as argument. Argument provided was not a string")
+	}
+	ExploreEnum++
+	byteArr, err := GetExploreLocationAreas(Limit(20), ExploreEnum, locationArea)
+	if err != nil {
+		fmt.Printf("An error occurred on http request to explore location area: %v\n", err)
+		return err
+	}
+	fmt.Println(string(byteArr))
 	return nil
 }

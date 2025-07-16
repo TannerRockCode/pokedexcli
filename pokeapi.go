@@ -47,6 +47,17 @@ func GetLocationAreas(limit Limit, mapEnum int) (LocationAreaResponse, error) {
 	return locationAreas, nil
 }
 
+func GetExploreLocationAreas(limit Limit, mapEnum int, areaName string) ([]byte, error) {
+	fmt.Printf("Entering explore location areas logic")
+	url := fmt.Sprintf("https://pokeapi.co/api/v2/location-area/?limit=%d&offset=%d&name=%d", limit, mapEnum, areaName)
+	dat, err := Get(url)
+	fmt.Printf("Explore location areas: \ndat\n")
+	if err != nil {
+		return dat, err
+	}
+	return dat, nil
+}
+
 // type LocationArea struct {
 // 	ID                   int                   `json:"id"`
 // 	Name                 string                `json:"name"`
