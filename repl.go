@@ -64,12 +64,9 @@ func repl() {
 		}
 
 		commandName := words[0]
-		fmt.Println("Getting words at index 1")
 		if len(words) > 1 {
 			args = words[1]
 		}
-
-		fmt.Println("Got words at index 1")
 
 		command, ok := Commands[commandName]
 		if !ok {
