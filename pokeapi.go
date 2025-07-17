@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand/v2"
 
 	"github.com/TannerRockCode/pokedexcli/internal/pokecache"
 )
@@ -24,10 +25,31 @@ type LocationAreaPokeEncounter struct {
 }
 
 type PokemonEncounter struct {
-	Pokemon PokemonInfo `json:"pokemon"`
+	Pokemon PokemonResourceInfo `json:"pokemon"`
+}
+
+type PokemonResourceInfo struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
 }
 
 type PokemonInfo struct {
+	ID             int    `json:"id"`
+	Name           string `json:"name"`
+	BaseExperience int    `json:"base_experience"`
+	Height         int    `json:"height"`
+	IsDefault      bool   `json:"is_default"`
+	Order          int    `json:"order"`
+	Abilities      []PokemonAbilityPosition
+}
+
+type PokemonAbilityPosition struct {
+	IsHidden bool                       `json:"is_hidden"`
+	Slot     int                        `json:"slot"`
+	Ability  PokemonAbilityResourceInfo `json:"ability"`
+}
+
+type PokemonAbilityResourceInfo struct {
 	Name string `json:"name"`
 	URL  string `json:"url"`
 }
@@ -58,7 +80,7 @@ func GetLocationAreas(limit Limit, mapEnum int) (LocationAreaResponse, error) {
 	return locationAreas, nil
 }
 
-func GetExploreLocationAreas(limit Limit, mapEnum int, areaName string) ([]string, error) {
+func GetExploreLocationAreas(areaName string) ([]string, error) {
 	var la LocationAreaPokeEncounter
 	var pokemonList []string
 	url := fmt.Sprintf("https://pokeapi.co/api/v2/location-area/%s", areaName)
@@ -92,6 +114,38 @@ func GetExploreLocationAreas(limit Limit, mapEnum int, areaName string) ([]strin
 	}
 	pokecache.Cache.Add(url, dat)
 	return pokemonList, nil
+}
+
+func GetPokemonCatchAttempt(pokemon string) (bool, error) {
+	var pI PokemonInfo
+	var caught bool = false
+	url := fmt.Sprintf("https://pokeapi.co/api/v2/pokemon/%s", pokemon)
+
+	//Get data from endpoint
+	dat, err := Get(url)
+	if err != nil {
+		return caught, err
+	}
+
+	err = json.Unmarshal(dat, &pI)
+	if err != nil {
+		return caught, err
+	}
+
+	caught = CatchAttempt(pI)
+	return caught, nil
+
+}
+
+func CatchAttempt(pi PokemonInfo) bool {
+	var caught bool = false
+	fmt.Printf("Pokemon: %s - BaseExperience: %d\n", pi.Name, pi.BaseExperience)
+	randNum := rand.IntN(pi.BaseExperience)
+	if randNum < 32 {
+		caught = true
+		Pokedex[pi.Name] = pi
+	}
+	return caught
 }
 
 // type LocationArea struct {

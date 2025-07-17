@@ -18,10 +18,11 @@ type cliCommand struct {
 var Commands map[string]cliCommand
 var MapEnum int
 var ExploreEnum int
+var Pokedex map[string]PokemonInfo
 
 func init() {
 	MapEnum = -1
-	ExploreEnum = -1
+	Pokedex = make(map[string]PokemonInfo, 200)
 
 	Commands = map[string]cliCommand{
 		"exit": {
@@ -48,6 +49,11 @@ func init() {
 			name:        "explore",
 			description: "Displays names of Pokemon found in provided location area",
 			callback:    commandExplore,
+		},
+		"catch": {
+			name:        "catch",
+			description: "Displays attempt to catch provided pokemon",
+			callback:    commandCatch,
 		},
 	}
 }
@@ -140,7 +146,7 @@ func commandExplore(arg interface{}) error {
 	}
 
 	fmt.Printf("Exploring %s...\n", locationArea)
-	pokemonNames, err := GetExploreLocationAreas(Limit(20), ExploreEnum, locationArea)
+	pokemonNames, err := GetExploreLocationAreas(locationArea)
 	if err != nil {
 		fmt.Printf("An error occurred on http request to explore location area: %v\n", err)
 		return err
@@ -151,4 +157,20 @@ func commandExplore(arg interface{}) error {
 		fmt.Printf(" - %s\n", name)
 	}
 	return nil
+}
+
+func commandCatch(arg interface{}) error {
+	pokemon, ok := arg.(string)
+	if !ok {
+		return errors.New("catch command requires string as argument. Argument provided was not a string")
+	}
+
+	fmt.Printf("Throwing a Pokeball at %s...\n", pokemon)
+	catchAttempt, err := GetPokemonCatchAttempt(pokemon)
+	if catchAttempt {
+		fmt.Printf("%s was caught!\n", pokemon)
+	} else {
+		fmt.Printf("%s escaped!\n", pokemon)
+	}
+	return err
 }
