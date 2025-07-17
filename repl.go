@@ -138,12 +138,17 @@ func commandExplore(arg interface{}) error {
 	if !ok {
 		return errors.New("explore command requires string as argument. Argument provided was not a string")
 	}
-	ExploreEnum++
+
+	fmt.Printf("Exploring %s...\n", locationArea)
 	pokemonNames, err := GetExploreLocationAreas(Limit(20), ExploreEnum, locationArea)
 	if err != nil {
 		fmt.Printf("An error occurred on http request to explore location area: %v\n", err)
 		return err
 	}
-	fmt.Println(pokemonNames)
+
+	fmt.Printf("Found Pokemon: \n")
+	for _, name := range pokemonNames {
+		fmt.Printf(" - %s\n", name)
+	}
 	return nil
 }
