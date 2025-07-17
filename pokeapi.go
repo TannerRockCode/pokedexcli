@@ -19,6 +19,19 @@ type LocationAreaResult struct {
 	URL  string `json:"url"`
 }
 
+type LocationAreaPokeEncounter struct {
+	PokemonEncounters []PokemonEncounter `json:"pokemon_encounters"`
+}
+
+type PokemonEncounter struct {
+	Pokemon PokemonInfo `json:"pokemon"`
+}
+
+type PokemonInfo struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
+
 func GetLocationAreas(limit Limit, mapEnum int) (LocationAreaResponse, error) {
 	var locationAreas LocationAreaResponse
 	url := fmt.Sprintf("https://pokeapi.co/api/v2/location-area/?limit=%d&offset=%d", limit, mapEnum)
@@ -47,15 +60,25 @@ func GetLocationAreas(limit Limit, mapEnum int) (LocationAreaResponse, error) {
 	return locationAreas, nil
 }
 
-func GetExploreLocationAreas(limit Limit, mapEnum int, areaName string) ([]byte, error) {
-	fmt.Printf("Entering explore location areas logic")
-	url := fmt.Sprintf("https://pokeapi.co/api/v2/location-area/?limit=%d&offset=%d&name=%d", limit, mapEnum, areaName)
+func GetExploreLocationAreas(limit Limit, mapEnum int, areaName string) ([]string, error) {
+	var la LocationAreaPokeEncounter
+	var pokemonList []string
+	url := fmt.Sprintf("https://pokeapi.co/api/v2/location-area/%s", areaName)
+
 	dat, err := Get(url)
-	fmt.Printf("Explore location areas: \ndat\n")
 	if err != nil {
-		return dat, err
+		return pokemonList, err
 	}
-	return dat, nil
+
+	err = json.Unmarshal(dat, &la)
+	if err != nil {
+		return pokemonList, err
+	}
+
+	for _, encounter := range la.PokemonEncounters {
+		pokemonList = append(pokemonList, encounter.Pokemon.Name)
+	}
+	return pokemonList, nil
 }
 
 // type LocationArea struct {
