@@ -37,9 +37,7 @@ func GetLocationAreas(limit Limit, mapEnum int) (LocationAreaResponse, error) {
 	url := fmt.Sprintf("https://pokeapi.co/api/v2/location-area/?limit=%d&offset=%d", limit, mapEnum)
 
 	dat, exists := pokecache.Cache.Get(url)
-	fmt.Printf("Checking if pokecache key for url: %v exists: %v\n", url, exists)
 	if exists {
-		fmt.Println("Using pokecache!")
 		err := json.Unmarshal(dat, &locationAreas)
 		if err != nil {
 			return locationAreas, err
@@ -51,7 +49,7 @@ func GetLocationAreas(limit Limit, mapEnum int) (LocationAreaResponse, error) {
 	if err != nil {
 		return locationAreas, err
 	}
-	//fmt.Printf("dat: %v", string(dat))
+
 	err = json.Unmarshal(dat, &locationAreas)
 	if err != nil {
 		return locationAreas, err
@@ -65,6 +63,20 @@ func GetExploreLocationAreas(limit Limit, mapEnum int, areaName string) ([]strin
 	var pokemonList []string
 	url := fmt.Sprintf("https://pokeapi.co/api/v2/location-area/%s", areaName)
 
+	//Get data from Cache
+	dat, exists := pokecache.Cache.Get(url)
+	if exists {
+		err := json.Unmarshal(dat, &la)
+		if err != nil {
+			return pokemonList, err
+		}
+		for _, encounter := range la.PokemonEncounters {
+			pokemonList = append(pokemonList, encounter.Pokemon.Name)
+		}
+		return pokemonList, nil
+	}
+
+	//Get data from endpoint
 	dat, err := Get(url)
 	if err != nil {
 		return pokemonList, err
@@ -78,6 +90,7 @@ func GetExploreLocationAreas(limit Limit, mapEnum int, areaName string) ([]strin
 	for _, encounter := range la.PokemonEncounters {
 		pokemonList = append(pokemonList, encounter.Pokemon.Name)
 	}
+	pokecache.Cache.Add(url, dat)
 	return pokemonList, nil
 }
 
