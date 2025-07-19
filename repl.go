@@ -60,6 +60,11 @@ func init() {
 			description: "Display information about provided pokemon in inventory",
 			callback:    commandInspect,
 		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "Displays names of all pokemon in pokedex inventory",
+			callback:    commandPokedex,
+		},
 	}
 }
 
@@ -174,6 +179,7 @@ func commandCatch(arg interface{}) error {
 	catchAttempt, err := GetPokemonCatchAttempt(pokemon)
 	if catchAttempt {
 		fmt.Printf("%s was caught!\n", pokemon)
+		fmt.Printf("You may now inspect %s with the inspect command.", pokemon)
 	} else {
 		fmt.Printf("%s escaped!\n", pokemon)
 	}
@@ -181,5 +187,37 @@ func commandCatch(arg interface{}) error {
 }
 
 func commandInspect(arg interface{}) error {
-	return errors.New("inspect no implemented yet")
+	pokemon, ok := arg.(string)
+	if !ok {
+		return errors.New("inspect command requires string as argument. Argument provided was not a string")
+	}
+	pokemonInfo, err := InspectPokemon(pokemon)
+	if err != nil {
+		fmt.Printf("Pokemon has not been caught before\n")
+		return err
+	}
+
+	fmt.Printf("Name: %s\nHeight: %d, \nWeight: %d,\n", pokemonInfo.Name, pokemonInfo.Height, pokemonInfo.Weight)
+	fmt.Printf("Stats: \n")
+	for _, val := range pokemonInfo.Stats {
+		fmt.Printf("  -%s: %d\n", val.Stat.Name, val.BaseStat)
+	}
+	fmt.Printf("Types: \n")
+	for _, val := range pokemonInfo.Types {
+		fmt.Printf("  - %s\n", val.Type.Name)
+	}
+
+	return nil
+}
+
+func commandPokedex(arg interface{}) error {
+	fmt.Println("Your Pokedex:")
+	if len(Pokedex) == 0 {
+		fmt.Println("Pokedex empty")
+	} else {
+		for _, pokemon := range Pokedex {
+			fmt.Printf(" - %s\n", pokemon.Name)
+		}
+	}
+	return nil
 }

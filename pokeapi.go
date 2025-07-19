@@ -38,9 +38,12 @@ type PokemonInfo struct {
 	Name           string `json:"name"`
 	BaseExperience int    `json:"base_experience"`
 	Height         int    `json:"height"`
+	Weight         int    `json:"weight"`
 	IsDefault      bool   `json:"is_default"`
 	Order          int    `json:"order"`
 	Abilities      []PokemonAbilityPosition
+	Stats          []PokemonStat
+	Types          []PokemonType
 }
 
 type PokemonAbilityPosition struct {
@@ -50,6 +53,22 @@ type PokemonAbilityPosition struct {
 }
 
 type PokemonAbilityResourceInfo struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
+
+type PokemonStat struct {
+	Stat     NamedAPIResource `json:"stat"`
+	Effort   int              `json:"Effort"`
+	BaseStat int              `json:"base_stat"`
+}
+
+type PokemonType struct {
+	Slot int              `json:"slot"`
+	Type NamedAPIResource `json:"type"`
+}
+
+type NamedAPIResource struct {
 	Name string `json:"name"`
 	URL  string `json:"url"`
 }
@@ -146,6 +165,15 @@ func CatchAttempt(pi PokemonInfo) bool {
 		Pokedex[pi.Name] = pi
 	}
 	return caught
+}
+
+func InspectPokemon(pokemon string) (PokemonInfo, error) {
+	var pi PokemonInfo
+	pi, exists := Pokedex[pokemon]
+	if !exists {
+		return pi, fmt.Errorf("%s does not exist in pokedex inventory", pokemon)
+	}
+	return pi, nil
 }
 
 // type LocationArea struct {
