@@ -55,6 +55,11 @@ func init() {
 			description: "Displays attempt to catch provided pokemon",
 			callback:    commandCatch,
 		},
+		"inspect": {
+			name:        "inspect",
+			description: "Display information about provided pokemon in inventory",
+			callback:    commandInspect,
+		},
 	}
 }
 
@@ -173,4 +178,8 @@ func commandCatch(arg interface{}) error {
 		fmt.Printf("%s escaped!\n", pokemon)
 	}
 	return err
+}
+
+func commandInspect(arg interface{}) error {
+	return errors.New("inspect no implemented yet")
 }
